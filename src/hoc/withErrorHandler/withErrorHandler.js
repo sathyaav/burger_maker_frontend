@@ -13,14 +13,14 @@ const withErrorHandler = (WrappedComponent, axios) => {
     componentWillUpdate(props){
 
       //Global interceptor for error handling
-      axios.interceptors.request.use(req => {
+      this.reqInterceptors = axios.interceptors.request.use(req => {
         //reset error to null on any request
         this.setState({error: null});
 
         return req;
       });
 
-      axios.interceptors.response.use( res => res, error => {
+      this.resInterceptors = axios.interceptors.response.use( res => res, error => {
         this.setState({error: error});
 
         return error;
@@ -29,6 +29,11 @@ const withErrorHandler = (WrappedComponent, axios) => {
 
     errorConfirmedHandler = () =>{
       this.setState({error:null});
+    }
+
+    componenetWillUnmount(){
+      axios.interceptors.request.eject(this.reqInterceptors);
+      axios.interceptors.request.eject(this.resInterceptors);
     }
 
 

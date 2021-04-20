@@ -24,20 +24,24 @@ class BurgerBuilder extends Component{
     totalPrice : 2,
     purchasable: false,
     purchasing: false,
-    loading: false
+    loading: false,
+    error: false
 
   }
 
   componentDidMount(){
-    axios.get("/ingredients.json")
+    axios.get("/initialIngredients")
         .then(response => {
+          let ing = response.data;
+          delete ing["id"];
           if(response)
-            this.setState({ingredients: response.data})
+            this.setState({ingredients: ing})
+          console.log(this.state.ingredients);
           this.setState({loading: false});
         })
         .catch(err => {
-          this.setState({loading: false});
-          console.log(err);
+          this.setState({error: true});
+          console.log(err)
         });
   }
 
@@ -51,7 +55,7 @@ class BurgerBuilder extends Component{
       .reduce((sum, el)=> {
         return sum+el;
       }  ,0);
-
+      console.log("sum",sum)
       this.setState({purchasable: sum>0})
 
   }
@@ -81,8 +85,9 @@ class BurgerBuilder extends Component{
        },
        deliveryMethod: 'fastest'
      }
-     axios.post('/orders.json', order)
+     axios.post('/orders', order)
         .then(response => {
+
           this.setState({loading: false, purchasing: false});
           console.log(response);
         })
@@ -105,6 +110,7 @@ class BurgerBuilder extends Component{
       const newPrice = (this.state.totalPrice + additionalPrice);
       this.setState({totalPrice: newPrice, ingredients: updatedIngredients});
       this.updatePurchasableState(updatedIngredients);
+      console.log("upgraded : ", updatedIngredients);
   }
 
   removeIngredientHandler = (type) => {
@@ -141,8 +147,7 @@ class BurgerBuilder extends Component{
     let orderSummary = null;
 
 
-
-    let burger = <Spinner />
+    let burger = this.state.error? <p> Ingredients can't be loaded </p>: <Spinner />
     if(this.state.ingredients){
       burger = (
         <Aux>
